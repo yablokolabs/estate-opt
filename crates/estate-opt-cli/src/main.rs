@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand, ValueEnum};
-use estate_opt_core::{HardConstraints, Property, load_properties_csv};
+use estate_opt_core::{HardConstraints, Property, StrategyMode, load_properties_csv};
 use estate_opt_scoring::ScoreWeights;
 use estate_opt_solvers::{
     RankedProperty, annealing_rank, generate_synthetic_properties, greedy_rank,
@@ -27,6 +27,8 @@ enum Commands {
         format: OutputFormat,
         #[arg(long, value_enum, default_value_t = SolverKind::Greedy)]
         solver: SolverKind,
+        #[arg(long, value_enum, default_value_t = StrategyArg::Income)]
+        strategy: StrategyArg,
     },
     DemoRank {
         #[arg(long)]
@@ -41,6 +43,8 @@ enum Commands {
         format: OutputFormat,
         #[arg(long, value_enum, default_value_t = SolverKind::Greedy)]
         solver: SolverKind,
+        #[arg(long, value_enum, default_value_t = StrategyArg::Income)]
+        strategy: StrategyArg,
     },
 }
 
@@ -57,6 +61,23 @@ enum SolverKind {
     Annealing,
 }
 
+#[derive(Copy, Clone, Debug, Eq, PartialEq, ValueEnum)]
+enum StrategyArg {
+    Income,
+    Resale,
+    Hybrid,
+}
+
+impl From<StrategyArg> for StrategyMode {
+    fn from(value: StrategyArg) -> Self {
+        match value {
+            StrategyArg::Income => StrategyMode::Income,
+            StrategyArg::Resale => StrategyMode::Resale,
+            StrategyArg::Hybrid => StrategyMode::Hybrid,
+        }
+    }
+}
+
 fn main() {
     let cli = Cli::parse();
 
@@ -68,9 +89,18 @@ fn main() {
             top,
             format,
             solver,
+            strategy,
         } => {
             let properties = load_properties_csv(file).expect("load property csv");
-            run_rank(properties, city, budget, top, format, solver);
+            run_rank(
+                properties,
+                city,
+                budget,
+                top,
+                format,
+                solver,
+                strategy.into(),
+            );
         }
         Commands::DemoRank {
             city,
@@ -79,9 +109,10 @@ fn main() {
             seed,
             format,
             solver,
+            strategy,
         } => {
             let properties = generate_synthetic_properties(count, seed);
-            run_rank(properties, city, budget, 5, format, solver);
+            run_rank(properties, city, budget, 5, format, solver, strategy.into());
         }
     }
 }
@@ -93,6 +124,7 @@ fn run_rank(
     top: usize,
     format: OutputFormat,
     solver: SolverKind,
+    strategy: StrategyMode,
 ) {
     let constraints = HardConstraints {
         max_budget: budget,
@@ -102,10 +134,20 @@ fn run_rank(
     };
 
     let ranked = match solver {
-        SolverKind::Greedy => greedy_rank(&properties, &constraints, &ScoreWeights::default()),
-        SolverKind::Annealing => {
-            annealing_rank(&properties, &constraints, &ScoreWeights::default(), 42, 250)
-        }
+        SolverKind::Greedy => greedy_rank(
+            &properties,
+            &constraints,
+            &ScoreWeights::default(),
+            strategy,
+        ),
+        SolverKind::Annealing => annealing_rank(
+            &properties,
+            &constraints,
+            &ScoreWeights::default(),
+            strategy,
+            42,
+            250,
+        ),
     };
 
     render_output(&ranked.into_iter().take(top).collect::<Vec<_>>(), format);
@@ -116,9 +158,10 @@ fn render_output(items: &[RankedProperty], format: OutputFormat) {
         OutputFormat::Text => {
             for item in items {
                 println!(
-                    "{} | {} | score {:.3} | {}",
+                    "{} | {} | {:?} | score {:.3} | {}",
                     item.property.id,
                     item.property.locality,
+                    item.breakdown.strategy_mode,
                     item.breakdown.total,
                     item.explanation.summary
                 );
@@ -131,13 +174,14 @@ fn render_output(items: &[RankedProperty], format: OutputFormat) {
             );
         }
         OutputFormat::Markdown => {
-            println!("| id | locality | score | summary |");
-            println!("| --- | --- | ---: | --- |");
+            println!("| id | locality | strategy | score | summary |");
+            println!("| --- | --- | --- | ---: | --- |");
             for item in items {
                 println!(
-                    "| {} | {} | {:.3} | {} |",
+                    "| {} | {} | {:?} | {:.3} | {} |",
                     item.property.id,
                     item.property.locality,
+                    item.breakdown.strategy_mode,
                     item.breakdown.total,
                     item.explanation.summary.replace('|', "/")
                 );

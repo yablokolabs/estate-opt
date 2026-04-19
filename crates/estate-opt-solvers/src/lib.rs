@@ -1,4 +1,4 @@
-use estate_opt_core::{HardConstraints, Property};
+use estate_opt_core::{HardConstraints, Property, StrategyMode};
 use estate_opt_scoring::{
     Explanation, ScoreBreakdown, ScoreWeights, explain_property, score_property,
 };
@@ -15,12 +15,13 @@ pub fn greedy_rank(
     properties: &[Property],
     constraints: &HardConstraints,
     weights: &ScoreWeights,
+    strategy_mode: StrategyMode,
 ) -> Vec<RankedProperty> {
     let mut ranked: Vec<_> = properties
         .iter()
         .filter(|property| constraints.allows(property))
         .map(|property| {
-            let breakdown = score_property(property, weights);
+            let breakdown = score_property(property, weights, strategy_mode.clone());
             RankedProperty {
                 property: property.clone(),
                 explanation: explain_property(property, &breakdown),
@@ -37,10 +38,11 @@ pub fn annealing_rank(
     properties: &[Property],
     constraints: &HardConstraints,
     weights: &ScoreWeights,
+    strategy_mode: StrategyMode,
     seed: u64,
     steps: usize,
 ) -> Vec<RankedProperty> {
-    let mut ranked = greedy_rank(properties, constraints, weights);
+    let mut ranked = greedy_rank(properties, constraints, weights, strategy_mode);
     if ranked.len() < 2 {
         return ranked;
     }
@@ -68,21 +70,26 @@ pub fn annealing_rank(
 
 pub fn generate_synthetic_properties(count: usize, seed: u64) -> Vec<Property> {
     let mut rng = StdRng::seed_from_u64(seed);
-    let cities = ["bengaluru", "mumbai", "hyderabad"];
+    let cities = ["los-angeles", "new-york", "miami"];
     let localities = ["core", "growth", "suburban", "premium"];
 
     (0..count)
-        .map(|idx| Property {
-            id: format!("prop-{idx:05}"),
-            city: cities[rng.random_range(0..cities.len())].to_string(),
-            locality: localities[rng.random_range(0..localities.len())].to_string(),
-            price: rng.random_range(2_000_000.0..15_000_000.0),
-            expected_rent: rng.random_range(80_000.0..400_000.0),
-            cap_rate: rng.random_range(0.03..0.11),
-            vacancy_risk: rng.random_range(0.02..0.18),
-            repair_cost: rng.random_range(0.01..0.25),
-            liquidity_score: rng.random_range(0.2..0.95),
-            holding_horizon_months: rng.random_range(24..121),
+        .map(|idx| {
+            let price = rng.random_range(650_000.0..4_500_000.0);
+            Property {
+                id: format!("prop-{idx:05}"),
+                city: cities[rng.random_range(0..cities.len())].to_string(),
+                locality: localities[rng.random_range(0..localities.len())].to_string(),
+                price,
+                expected_rent: rng.random_range(36_000.0..240_000.0),
+                cap_rate: rng.random_range(0.03..0.11),
+                expected_sale_price: price * rng.random_range(1.02..1.35),
+                appreciation_score: rng.random_range(0.2..0.95),
+                vacancy_risk: rng.random_range(0.02..0.18),
+                repair_cost: rng.random_range(0.01..0.25),
+                liquidity_score: rng.random_range(0.2..0.95),
+                holding_horizon_months: rng.random_range(24..121),
+            }
         })
         .collect()
 }
@@ -107,7 +114,14 @@ mod tests {
             min_liquidity_score: None,
             max_vacancy_risk: None,
         };
-        let ranked = annealing_rank(&properties, &constraints, &ScoreWeights::default(), 7, 25);
+        let ranked = annealing_rank(
+            &properties,
+            &constraints,
+            &ScoreWeights::default(),
+            StrategyMode::Hybrid,
+            7,
+            25,
+        );
         assert!(!ranked.is_empty());
         for window in ranked.windows(2) {
             assert!(window[0].breakdown.total >= window[1].breakdown.total);

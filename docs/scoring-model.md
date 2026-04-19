@@ -9,14 +9,30 @@ Hard constraints answer:
 - is this property allowed at all?
 
 Scoring answers:
-- among the allowed properties, which ones look stronger and why?
+- among the allowed properties, which ones look stronger and why for a chosen strategy?
+
+## Strategy modes
+The prototype currently supports three modes:
+- **Income**: prioritize rental yield, liquidity, and downside control
+- **Resale**: prioritize appreciation potential and sale spread
+- **Hybrid**: balance both income and resale signals
 
 ## Current score shape
 The current prototype uses a weighted additive score.
 
-### Rendered form
+### Income mode
 $$
-S = Y + L - V - R
+S_{\mathrm{income}} = Y + L - V - R
+$$
+
+### Resale mode
+$$
+S_{\mathrm{resale}} = A + P + L - V - R
+$$
+
+### Hybrid mode
+$$
+S_{\mathrm{hybrid}} = Y + A + P + L - V - R
 $$
 
 Where:
@@ -30,6 +46,14 @@ L = w_l \cdot \ell
 $$
 
 $$
+A = w_a \cdot a
+$$
+
+$$
+P = w_p \cdot \frac{s - p}{p}
+$$
+
+$$
 V = w_v \cdot v
 $$
 
@@ -37,20 +61,18 @@ $$
 R = w_r \cdot r
 $$
 
-So the full score is:
-
-$$
-S = (w_y \cdot c) + (w_l \cdot \ell) - (w_v \cdot v) - (w_r \cdot r)
-$$
-
 ## Variable meanings
-- $S$: total score
 - $c$: cap rate
 - $\ell$: liquidity score
+- $a$: appreciation score
+- $s$: expected sale price
+- $p$: current purchase price
 - $v$: vacancy risk
 - $r$: repair cost
 - $w_y$: yield weight
 - $w_l$: liquidity weight
+- $w_a$: appreciation weight
+- $w_p$: resale-spread weight
 - $w_v$: vacancy-risk weight
 - $w_r$: repair-cost weight
 
@@ -63,10 +85,10 @@ Examples of hard constraints:
 
 These are applied before ranking.
 
-Formally, if a property $p$ does not satisfy the hard constraint set $\mathcal{C}$, then it is excluded before scoring:
+Formally, if a property $x$ does not satisfy the hard constraint set $\mathcal{C}$, then it is excluded before scoring:
 
 $$
-p \notin \mathcal{C} \implies p \text{ is filtered out}
+x \notin \mathcal{C} \implies x \text{ is filtered out}
 $$
 
 The weighted score is only used on properties that survive the hard filter.
@@ -76,18 +98,7 @@ This structure keeps the system explainable:
 - agents can see why a property was excluded
 - users can see why a surviving property ranked higher
 - future solvers can optimize against a clear objective
-
-## Example intuition
-A property tends to rank well when:
-- cap rate is strong
-- liquidity score is strong
-- vacancy risk is lower
-- repair burden is lower
-
-A property tends to rank worse when:
-- repair cost is high
-- liquidity is weak
-- vacancy risk materially drags down the total
+- the same property can be evaluated differently depending on the user strategy
 
 ## Important limitation
 This is intentionally a simple starting model.
@@ -98,10 +109,6 @@ It is **not yet**:
 - a learned model from real transaction history
 - a guarantee of globally optimal investing decisions
 
-## Why no heavy math in the README
-The README is meant to stay accessible for open-source users, proptech operators, brokers, and investors.
-This document is the better place for formulas and optimization notes.
-
 ## Future extensions
 Later versions may add:
 - normalized feature scaling
@@ -110,15 +117,3 @@ Later versions may add:
 - time-horizon-aware objectives
 - portfolio-level constraints
 - experimental QUBO-style binary formulations
-
-A more structured portfolio objective could eventually look like:
-
-$$
-\max_{x \in \{0,1\}^n} \sum_{i=1}^{n} x_i S_i - \lambda D(x)
-$$
-
-Where:
-- $x_i$ indicates whether property $i$ is selected
-- $S_i$ is the property-level score
-- $D(x)$ is a diversification or concentration penalty
-- $\lambda$ controls the trade-off between raw score and diversification
