@@ -60,6 +60,9 @@ More hands-on examples live in `examples/USAGE.md`.
 4. benchmark harnesses with manual acceptance criteria
 5. README variants for open-source, investor, and proptech audiences
 
+## Technical notes
+- See `docs/scoring-model.md` for a lightweight formula-level explanation of the current scoring approach.
+
 ## Rendered examples
 
 ### Text output
