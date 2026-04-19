@@ -1,0 +1,13 @@
+[package]
+name = "estate-opt-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+clap.workspace = true
+serde_json.workspace = true
+estate-opt-core = { path = "../estate-opt-core" }
+estate-opt-scoring = { path = "../estate-opt-scoring" }
+estate-opt-solvers = { path = "../estate-opt-solvers" }

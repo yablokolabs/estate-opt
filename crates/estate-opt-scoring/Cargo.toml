@@ -1,0 +1,10 @@
+[package]
+name = "estate-opt-scoring"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+serde.workspace = true
+estate-opt-core = { path = "../estate-opt-core" }
