@@ -12,40 +12,64 @@ Scoring answers:
 - among the allowed properties, which ones look stronger and why?
 
 ## Current score shape
-The current prototype uses a weighted additive score:
+The current prototype uses a weighted additive score.
 
-```text
-score = yield_component + liquidity_component - risk_penalty - repair_penalty
-```
+### Rendered form
+$$
+S = Y + L - V - R
+$$
 
-Where the current implementation maps to:
+Where:
 
-```text
-yield_component = cap_rate * yield_weight
-liquidity_component = liquidity_score * liquidity_weight
-risk_penalty = vacancy_risk * risk_weight
-repair_penalty = repair_cost * repair_cost_weight
-```
+$$
+Y = w_y \cdot c
+$$
 
-And therefore:
+$$
+L = w_l \cdot \ell
+$$
 
-```text
-total_score = (cap_rate * yield_weight)
-            + (liquidity_score * liquidity_weight)
-            - (vacancy_risk * risk_weight)
-            - (repair_cost * repair_cost_weight)
-```
+$$
+V = w_v \cdot v
+$$
+
+$$
+R = w_r \cdot r
+$$
+
+So the full score is:
+
+$$
+S = (w_y \cdot c) + (w_l \cdot \ell) - (w_v \cdot v) - (w_r \cdot r)
+$$
+
+## Variable meanings
+- $S$: total score
+- $c$: cap rate
+- $\ell$: liquidity score
+- $v$: vacancy risk
+- $r$: repair cost
+- $w_y$: yield weight
+- $w_l$: liquidity weight
+- $w_v$: vacancy-risk weight
+- $w_r$: repair-cost weight
 
 ## Hard constraints vs soft preferences
 Examples of hard constraints:
-- max budget
+- maximum budget
 - required city
 - minimum liquidity score
 - maximum vacancy risk
 
 These are applied before ranking.
 
-The weighted score is then used only on properties that survive the hard filter.
+Formally, if a property $p$ does not satisfy the hard constraint set $\mathcal{C}$, then it is excluded before scoring:
+
+$$
+p \notin \mathcal{C} \implies p \text{ is filtered out}
+$$
+
+The weighted score is only used on properties that survive the hard filter.
 
 ## Why this is useful
 This structure keeps the system explainable:
@@ -54,16 +78,16 @@ This structure keeps the system explainable:
 - future solvers can optimize against a clear objective
 
 ## Example intuition
-A property can rank well if it has:
-- strong cap rate
-- good liquidity
-- acceptable vacancy risk
-- manageable repair burden
+A property tends to rank well when:
+- cap rate is strong
+- liquidity score is strong
+- vacancy risk is lower
+- repair burden is lower
 
-A property can rank lower if:
+A property tends to rank worse when:
 - repair cost is high
 - liquidity is weak
-- vacancy risk drags down the total score
+- vacancy risk materially drags down the total
 
 ## Important limitation
 This is intentionally a simple starting model.
@@ -86,3 +110,15 @@ Later versions may add:
 - time-horizon-aware objectives
 - portfolio-level constraints
 - experimental QUBO-style binary formulations
+
+A more structured portfolio objective could eventually look like:
+
+$$
+\max_{x \in \{0,1\}^n} \sum_{i=1}^{n} x_i S_i - \lambda D(x)
+$$
+
+Where:
+- $x_i$ indicates whether property $i$ is selected
+- $S_i$ is the property-level score
+- $D(x)$ is a diversification or concentration penalty
+- $\lambda$ controls the trade-off between raw score and diversification
