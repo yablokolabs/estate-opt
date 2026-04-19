@@ -2,6 +2,19 @@
 
 Rust-native optimization engine for real estate portfolios and deal decisions using quantum-inspired heuristics, classical solvers, and explainable scoring.
 
+## In one sentence
+`estate-opt` helps rank real estate opportunities under practical constraints like budget by combining explainable scoring, classical search baselines, and an experimental quantum-inspired annealing-style heuristic.
+
+## Plain-English explanation
+For a novice real estate agent, the simplest way to think about `estate-opt` is:
+- start with a buyer or investor budget
+- filter out properties that do not fit the hard constraints
+- score the remaining options across factors like yield, liquidity, vacancy risk, and repair cost
+- compare simple ranking methods with more advanced heuristic search
+- explain why the top properties ranked above the others
+
+So the product is **not** claiming magical quantum computing. It is a practical decision-support engine that helps surface better property choices in a transparent way.
+
 ## Status
 Early workspace scaffold for a practical open-source optimization engine focused on:
 - property ranking under constraints
