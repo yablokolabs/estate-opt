@@ -27,8 +27,8 @@ Early workspace scaffold for a practical open-source optimization engine focused
 
 ## Example commands
 ```bash
-cargo run -p estate-opt-cli -- demo-rank --city bengaluru --budget 5000000 --count 1000
-cargo run -p estate-opt-cli -- rank examples/sample_properties.csv --city bengaluru --budget 5000000 --top 3
+cargo run -p estate-opt-cli -- demo-rank --city los-angeles --budget 1500000 --count 1000
+cargo run -p estate-opt-cli -- rank examples/sample_properties.csv --city los-angeles --budget 1500000 --top 3
 ```
 
 More hands-on examples live in `examples/USAGE.md`.
@@ -51,9 +51,9 @@ More hands-on examples live in `examples/USAGE.md`.
 
 ### Text output
 ```text
-blr-002 | whitefield | score 0.540 | blr-002 in whitefield scored 0.540 with yield 0.071, liquidity 0.553, risk penalty 0.048, and repair penalty 0.036.
-blr-001 | indiranagar | score 0.536 | blr-001 in indiranagar scored 0.536 with yield 0.074, liquidity 0.574, risk penalty 0.064, and repair penalty 0.048.
-hyd-001 | gachibowli | score 0.515 | hyd-001 in gachibowli scored 0.515 with yield 0.076, liquidity 0.539, risk penalty 0.056, and repair penalty 0.044.
+ny-002 | park-slope | score 0.637 | ny-002 in park-slope scored 0.637 with yield 0.066, liquidity 0.623, risk penalty 0.024, and repair penalty 0.028.
+la-002 | santa-monica | score 0.630 | la-002 in santa-monica scored 0.630 with yield 0.070, liquidity 0.616, risk penalty 0.032, and repair penalty 0.024.
+ny-001 | astoria | score 0.587 | ny-001 in astoria scored 0.587 with yield 0.071, liquidity 0.588, risk penalty 0.040, and repair penalty 0.032.
 ```
 
 ### JSON output
@@ -61,28 +61,27 @@ hyd-001 | gachibowli | score 0.515 | hyd-001 in gachibowli scored 0.515 with yie
 [
   {
     "property": {
-      "id": "blr-002",
-      "city": "bengaluru",
-      "locality": "whitefield",
-      "price": 5200000.0,
-      "expected_rent": 195000.0,
-      "cap_rate": 0.071,
-      "vacancy_risk": 0.06,
-      "repair_cost": 0.09,
-      "liquidity_score": 0.79,
-      "holding_horizon_months": 48
+      "id": "ny-002",
+      "city": "new-york",
+      "locality": "park-slope",
+      "price": 1780000.0,
+      "expected_rent": 98000.0,
+      "cap_rate": 0.066,
+      "vacancy_risk": 0.03,
+      "repair_cost": 0.07,
+      "liquidity_score": 0.89,
+      "holding_horizon_months": 84
     },
     "breakdown": {
-      "total": 0.5399999999999998,
-      "yield_component": 0.071,
-      "liquidity_component": 0.5529999999999999,
-      "risk_penalty": 0.048,
-      "repair_penalty": 0.036
+      "total": 0.637,
+      "yield_component": 0.066,
+      "liquidity_component": 0.623,
+      "risk_penalty": 0.024,
+      "repair_penalty": 0.028000000000000004
     },
     "explanation": {
-      "summary": "blr-002 in whitefield scored 0.540 with yield 0.071, liquidity 0.553, risk penalty 0.048, and repair penalty 0.036.",
+      "summary": "ny-002 in park-slope scored 0.637 with yield 0.066, liquidity 0.623, risk penalty 0.024, and repair penalty 0.028.",
       "strengths": [
-        "strong cap rate for income-oriented ranking",
         "above-average liquidity profile"
       ],
       "tradeoffs": []
@@ -90,26 +89,26 @@ hyd-001 | gachibowli | score 0.515 | hyd-001 in gachibowli scored 0.515 with yie
   },
   {
     "property": {
-      "id": "blr-001",
-      "city": "bengaluru",
-      "locality": "indiranagar",
-      "price": 4800000.0,
-      "expected_rent": 180000.0,
-      "cap_rate": 0.074,
-      "vacancy_risk": 0.08,
-      "repair_cost": 0.12,
-      "liquidity_score": 0.82,
-      "holding_horizon_months": 60
+      "id": "la-002",
+      "city": "los-angeles",
+      "locality": "santa-monica",
+      "price": 1650000.0,
+      "expected_rent": 96000.0,
+      "cap_rate": 0.07,
+      "vacancy_risk": 0.04,
+      "repair_cost": 0.06,
+      "liquidity_score": 0.88,
+      "holding_horizon_months": 72
     },
     "breakdown": {
-      "total": 0.5359999999999998,
-      "yield_component": 0.074,
-      "liquidity_component": 0.574,
-      "risk_penalty": 0.064,
-      "repair_penalty": 0.048
+      "total": 0.6299999999999999,
+      "yield_component": 0.07,
+      "liquidity_component": 0.616,
+      "risk_penalty": 0.032,
+      "repair_penalty": 0.024
     },
     "explanation": {
-      "summary": "blr-001 in indiranagar scored 0.536 with yield 0.074, liquidity 0.574, risk penalty 0.064, and repair penalty 0.048.",
+      "summary": "la-002 in santa-monica scored 0.630 with yield 0.070, liquidity 0.616, risk penalty 0.032, and repair penalty 0.024.",
       "strengths": [
         "strong cap rate for income-oriented ranking",
         "above-average liquidity profile"
@@ -124,10 +123,9 @@ hyd-001 | gachibowli | score 0.515 | hyd-001 in gachibowli scored 0.515 with yie
 ```markdown
 | id | locality | score | summary |
 | --- | --- | ---: | --- |
-| blr-002 | whitefield | 0.540 | blr-002 in whitefield scored 0.540 with yield 0.071, liquidity 0.553, risk penalty 0.048, and repair penalty 0.036. |
-| blr-001 | indiranagar | 0.536 | blr-001 in indiranagar scored 0.536 with yield 0.074, liquidity 0.574, risk penalty 0.064, and repair penalty 0.048. |
-| hyd-001 | gachibowli | 0.515 | hyd-001 in gachibowli scored 0.515 with yield 0.076, liquidity 0.539, risk penalty 0.056, and repair penalty 0.044. |
+| ny-002 | park-slope | 0.637 | ny-002 in park-slope scored 0.637 with yield 0.066, liquidity 0.623, risk penalty 0.024, and repair penalty 0.028. |
+| la-002 | santa-monica | 0.630 | la-002 in santa-monica scored 0.630 with yield 0.070, liquidity 0.616, risk penalty 0.032, and repair penalty 0.024. |
+| ny-001 | astoria | 0.587 | ny-001 in astoria scored 0.587 with yield 0.071, liquidity 0.588, risk penalty 0.040, and repair penalty 0.032. |
 ```
 
 See `examples/USAGE.md` for more command variants and explanations.
-
