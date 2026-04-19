@@ -54,7 +54,7 @@ More hands-on examples live in `examples/USAGE.md`.
 
 ### Text output
 ```text
-la-001 | silver-lake | Income | score 0.565 | la-001 in silver-lake scored 0.565 in income mode with yield 0.068, liquidity 0.567, appreciation 0.666, resale spread 0.112, risk penalty 0.056, and repair penalty 0.040.
+ny-002 | park-slope | Income | score 0.637 | ny-002 in park-slope scored 0.637 in income mode with yield 0.066, liquidity 0.623, appreciation 0.729, resale spread 0.118, risk penalty 0.024, and repair penalty 0.028.
 ```
 
 ### JSON output
@@ -62,31 +62,31 @@ la-001 | silver-lake | Income | score 0.565 | la-001 in silver-lake scored 0.565
 [
   {
     "property": {
-      "id": "la-002",
-      "city": "los-angeles",
-      "locality": "santa-monica",
-      "price": 1650000.0,
-      "expected_rent": 96000.0,
-      "cap_rate": 0.07,
-      "expected_sale_price": 1910000.0,
-      "appreciation_score": 0.78,
-      "vacancy_risk": 0.04,
-      "repair_cost": 0.06,
-      "liquidity_score": 0.88,
-      "holding_horizon_months": 72
+      "id": "ny-002",
+      "city": "new-york",
+      "locality": "park-slope",
+      "price": 1780000.0,
+      "expected_rent": 98000.0,
+      "cap_rate": 0.066,
+      "expected_sale_price": 2130000.0,
+      "appreciation_score": 0.81,
+      "vacancy_risk": 0.03,
+      "repair_cost": 0.07,
+      "liquidity_score": 0.89,
+      "holding_horizon_months": 84
     },
     "breakdown": {
-      "total": 1.4585454545454545,
+      "total": 1.4179775280898876,
       "strategy_mode": "resale",
-      "yield_component": 0.07,
-      "liquidity_component": 0.616,
-      "appreciation_component": 0.7020000000000001,
-      "resale_spread_component": 0.09454545454545456,
-      "risk_penalty": 0.032,
-      "repair_penalty": 0.024
+      "yield_component": 0.066,
+      "liquidity_component": 0.623,
+      "appreciation_component": 0.7290000000000001,
+      "resale_spread_component": 0.11797752808988764,
+      "risk_penalty": 0.024,
+      "repair_penalty": 0.028000000000000004
     },
     "explanation": {
-      "summary": "la-002 in santa-monica scored 1.459 in resale mode with yield 0.070, liquidity 0.616, appreciation 0.702, resale spread 0.095, risk penalty 0.032, and repair penalty 0.024.",
+      "summary": "ny-002 in park-slope scored 1.418 in resale mode with yield 0.066, liquidity 0.623, appreciation 0.729, resale spread 0.118, risk penalty 0.024, and repair penalty 0.028.",
       "strengths": [
         "strong appreciation outlook for resale scenarios",
         "above-average liquidity profile"
@@ -101,8 +101,8 @@ la-001 | silver-lake | Income | score 0.565 | la-001 in silver-lake scored 0.565
 ```markdown
 | id | locality | strategy | score | summary |
 | --- | --- | --- | ---: | --- |
-| la-002 | santa-monica | Resale | 1.459 | la-002 in santa-monica scored 1.459 in resale mode with yield 0.070, liquidity 0.616, appreciation 0.702, resale spread 0.095, risk penalty 0.032, and repair penalty 0.024. |
-| ny-002 | park-slope | Resale | 1.454 | ny-002 in park-slope scored 1.454 in resale mode with yield 0.066, liquidity 0.623, appreciation 0.729, resale spread 0.118, risk penalty 0.024, and repair penalty 0.028. |
+| ny-002 | park-slope | Resale | 1.418 | ny-002 in park-slope scored 1.418 in resale mode with yield 0.066, liquidity 0.623, appreciation 0.729, resale spread 0.118, risk penalty 0.024, and repair penalty 0.028. |
+| la-002 | santa-monica | Resale | 1.357 | la-002 in santa-monica scored 1.357 in resale mode with yield 0.070, liquidity 0.616, appreciation 0.702, resale spread 0.095, risk penalty 0.032, and repair penalty 0.024. |
 ```
 
 See `examples/USAGE.md` for more command variants and explanations.
