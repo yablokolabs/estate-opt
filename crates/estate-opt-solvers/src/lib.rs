@@ -21,7 +21,7 @@ pub fn greedy_rank(
         .iter()
         .filter(|property| constraints.allows(property))
         .map(|property| {
-            let breakdown = score_property(property, weights, strategy_mode.clone());
+            let breakdown = score_property(property, weights, strategy_mode);
             RankedProperty {
                 property: property.clone(),
                 explanation: explain_property(property, &breakdown),
@@ -47,24 +47,26 @@ pub fn annealing_rank(
         return ranked;
     }
 
+    let n = ranked.len();
     let mut rng = StdRng::seed_from_u64(seed);
     let mut temperature = 1.0;
     for _ in 0..steps {
-        let i = rng.random_range(0..ranked.len());
-        let j = rng.random_range(0..ranked.len());
+        let i = rng.random_range(0..n);
+        let j = rng.random_range(0..n);
         if i == j {
             continue;
         }
-        let current = ranked[i].breakdown.total + ranked[j].breakdown.total;
-        let swapped = ranked[j].breakdown.total + ranked[i].breakdown.total;
-        let accept = swapped >= current || rng.random::<f64>() < temperature;
-        if accept {
+        // Position-weighted delta: placing higher-scoring items at lower indices
+        // (better positions) increases the objective. A positive delta means the
+        // swap improves the ranking.
+        let delta = (ranked[j].breakdown.total - ranked[i].breakdown.total)
+            * (j as f64 - i as f64);
+        if delta > 0.0 || rng.random::<f64>() < (delta / temperature).exp() {
             ranked.swap(i, j);
         }
         temperature *= 0.995;
     }
 
-    ranked.sort_by(|a, b| b.breakdown.total.total_cmp(&a.breakdown.total));
     ranked
 }
 
@@ -106,7 +108,7 @@ mod tests {
     }
 
     #[test]
-    fn annealing_keeps_sorted_output_shape() {
+    fn annealing_produces_valid_ranking() {
         let properties = generate_synthetic_properties(20, 5);
         let constraints = HardConstraints {
             max_budget: None,
@@ -114,17 +116,32 @@ mod tests {
             min_liquidity_score: None,
             max_vacancy_risk: None,
         };
-        let ranked = annealing_rank(
+        let greedy = greedy_rank(
+            &properties,
+            &constraints,
+            &ScoreWeights::default(),
+            StrategyMode::Hybrid,
+        );
+        let annealed = annealing_rank(
             &properties,
             &constraints,
             &ScoreWeights::default(),
             StrategyMode::Hybrid,
             7,
-            25,
+            5000,
         );
-        assert!(!ranked.is_empty());
-        for window in ranked.windows(2) {
-            assert!(window[0].breakdown.total >= window[1].breakdown.total);
+        assert_eq!(annealed.len(), greedy.len());
+        for item in &annealed {
+            assert!(item.breakdown.total.is_finite());
         }
+        // With enough steps, the top of the ranking should converge toward
+        // high-scoring items. Verify the top item is in the greedy top-3.
+        let greedy_top3: Vec<_> = greedy.iter().take(3).map(|r| &r.property.id).collect();
+        assert!(
+            greedy_top3.contains(&&annealed[0].property.id),
+            "annealing top pick {:?} not in greedy top 3 {:?}",
+            annealed[0].property.id,
+            greedy_top3
+        );
     }
 }

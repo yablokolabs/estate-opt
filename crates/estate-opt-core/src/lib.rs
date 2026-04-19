@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::{fs::File, path::Path};
 use thiserror::Error;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum StrategyMode {
     Income,
